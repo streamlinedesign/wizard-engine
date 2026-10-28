@@ -26,6 +26,7 @@ func main() {
 	screenshot := flag.String("screenshot", "", "write the canvas to this PNG after -ticks ticks and exit")
 	ticks := flag.Uint64("ticks", 90, "ticks to run before taking the screenshot")
 	scale := flag.Int("scale", 3, "initial window zoom")
+	canvas := flag.String("canvas", "320x180", "virtual resolution; bigger shows more of the world")
 	scene := flag.String("scene", "campus", "scene to start in: campus or snow")
 	at := flag.String("at", "", "start the player at tile x,y (campus only), e.g. -at 33,26")
 	say := flag.String("say", "", "open this dialogue id on start, to preview text (campus only)")
@@ -48,10 +49,14 @@ func main() {
 		log.Fatalf("unknown scene %q", *scene)
 	}
 
+	var cw, ch int
+	if _, err := fmt.Sscanf(*canvas, "%dx%d", &cw, &ch); err != nil || cw < 64 || ch < 64 {
+		log.Fatalf("-canvas wants WxH, e.g. 480x270")
+	}
 	g := engine.New(engine.Config{
 		Title:        "Wizard Engine - " + *scene,
-		CanvasWidth:  320,
-		CanvasHeight: 180,
+		CanvasWidth:  cw,
+		CanvasHeight: ch,
 		WindowScale:  *scale,
 	}, start)
 	g.Context().Input.Bindings["debug"] = []ebiten.Key{ebiten.KeyF3}
