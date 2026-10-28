@@ -49,10 +49,25 @@ aseprite -b wizard.aseprite \
 - The JSON's `meta.image` must be the PNG filename next to it.
 - Keep the PNG and JSON together under `assets/sprites/`.
 
-## Style notes (agreed so far)
+## Style (decided 2026-10-28: "style B")
 
-- Top-down, 16x16 tiles, taller characters. Aiming for a cozy, slightly
-  moody look rather than bright and chunky: a restrained palette, dark
-  outlines on characters, softer edges on terrain.
-- First real scene to draw: a small winter village hub (snow, pines, a
-  frozen pond, lamps, a fence, the old wizard's house).
+Compared three mock-ups (`go run ./tools/mockup`): the current placeholder
+look, the same 16x16 with a muted palette and adult proportions, and that
+palette at 32x32. Style B won; 32x32 was judged no improvement ("too
+crispy"). So:
+
+- 16x16 tiles stay. Characters about 2.5 tiles tall (16x40 cells are fine,
+  feet on the bottom row), head roughly a fifth of the height.
+- Muted, slightly cool palette; nothing fully saturated. Outlines are a
+  soft dark grey `#26222e`, never pure black. Terrain has no outlines at
+  all; characters and props do.
+- Reference values (the placeholders use these now):
+  grass `#5c7648` / dark `#4a603a` / light `#6c8654`;
+  stone path `#80766a` / dark `#68605a` / light `#92887c`;
+  slate roof `#4e4858` / dark `#3a3442` / light `#605a6c`;
+  plaster `#beb29e` / timber `#5a4230`;
+  robe `#383c64` / shade `#262846`; skin `#d6b08e`; beard `#cecccf`;
+  lamp glow `#f0c878`.
+- First real scene to draw: the campus (grass, cobbles, timber-framed
+  buildings with slate roofs, trees, lamps) and the wizard. The winter
+  village comes later.

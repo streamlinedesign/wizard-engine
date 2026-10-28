@@ -19,17 +19,17 @@ import (
 
 var palette = map[byte]color.RGBA{
 	'.': {0, 0, 0, 0},
-	'O': {24, 20, 37, 255},    // outline
-	'H': {58, 68, 140, 255},   // hat/robe blue
-	'h': {90, 105, 190, 255},  // hat highlight
-	'R': {74, 84, 160, 255},   // robe
-	'r': {46, 52, 112, 255},   // robe shade
-	'S': {232, 190, 150, 255}, // skin
-	'B': {230, 230, 236, 255}, // beard
+	'O': {38, 34, 46, 255},    // outline
+	'H': {44, 46, 80, 255},    // hat/robe indigo
+	'h': {66, 70, 112, 255},   // hat highlight
+	'R': {56, 60, 100, 255},   // robe
+	'r': {38, 40, 70, 255},    // robe shade
+	'S': {214, 176, 142, 255}, // skin
+	'B': {206, 204, 208, 255}, // beard
 	'E': {24, 20, 37, 255},    // eye
 	'T': {120, 82, 50, 255},   // staff wood
 	'G': {120, 220, 255, 255}, // staff gem
-	'Y': {240, 200, 90, 255},  // belt / trim
+	'Y': {206, 170, 90, 255},  // belt / trim
 }
 
 // Each template is 16 wide x 28 tall; the frame cell is 16x32 and the body
