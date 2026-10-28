@@ -22,7 +22,7 @@ kept to the parts that are the same in every 2D game.
 - `engine.go`: `Game` runs a fixed 60 ticks/second `Update` and a `Draw`
   into the virtual canvas. One `Scene` is active at a time; scenes receive a
   `Context` (input, camera, timing) and can swap to another scene.
-- `render/`: `Viewport` is the 320x180 canvas, integer-scaled to the window
+- `render/`: `Viewport` is the 640x360 canvas (40x22 tiles visible), integer-scaled to the window
   with letterboxing. `Camera` follows a target smoothly, clamps to the map,
   and snaps its offset to whole pixels so nothing shimmers.
 - `input/`: physical keys map to named `Action`s. Game code asks "is Cast

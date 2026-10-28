@@ -25,8 +25,8 @@ import (
 func main() {
 	screenshot := flag.String("screenshot", "", "write the canvas to this PNG after -ticks ticks and exit")
 	ticks := flag.Uint64("ticks", 90, "ticks to run before taking the screenshot")
-	scale := flag.Int("scale", 3, "initial window zoom")
-	canvas := flag.String("canvas", "320x180", "virtual resolution; bigger shows more of the world")
+	scale := flag.Int("scale", 2, "initial window zoom")
+	canvas := flag.String("canvas", "640x360", "virtual resolution; bigger shows more of the world")
 	scene := flag.String("scene", "campus", "scene to start in: campus or snow")
 	at := flag.String("at", "", "start the player at tile x,y (campus only), e.g. -at 33,26")
 	say := flag.String("say", "", "open this dialogue id on start, to preview text (campus only)")
