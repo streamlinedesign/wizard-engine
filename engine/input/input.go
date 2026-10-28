@@ -22,6 +22,11 @@ const (
 	Cast      Action = "cast"
 	Menu      Action = "menu"
 	Inventory Action = "inventory"
+	Grimoire  Action = "grimoire"
+	Slot1     Action = "slot1"
+	Slot2     Action = "slot2"
+	Slot3     Action = "slot3"
+	Slot4     Action = "slot4"
 )
 
 // Bindings maps each action to the keys that trigger it.
@@ -38,6 +43,11 @@ func DefaultBindings() Bindings {
 		Cast:      {ebiten.KeySpace},
 		Menu:      {ebiten.KeyEscape},
 		Inventory: {ebiten.KeyTab, ebiten.KeyI},
+		Grimoire:  {ebiten.KeyG},
+		Slot1:     {ebiten.KeyDigit1},
+		Slot2:     {ebiten.KeyDigit2},
+		Slot3:     {ebiten.KeyDigit3},
+		Slot4:     {ebiten.KeyDigit4},
 	}
 }
 
@@ -69,6 +79,16 @@ func (s *State) JustPressed(a Action) bool {
 		}
 	}
 	return false
+}
+
+// Clicked reports whether the left mouse button went down this tick.
+func (s *State) Clicked() bool {
+	return inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
+}
+
+// RightClicked reports whether the right mouse button went down this tick.
+func (s *State) RightClicked() bool {
+	return inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
 }
 
 // Axis returns the movement direction as a unit vector (or zero). Diagonals

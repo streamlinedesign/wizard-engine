@@ -31,12 +31,15 @@ func main() {
 	at := flag.String("at", "", "start the player at tile x,y (campus only), e.g. -at 33,26")
 	say := flag.String("say", "", "open this dialogue id on start, to preview text (campus only)")
 	inv := flag.Bool("inventory", false, "start with the old wizard's gifts and the inventory open (campus only)")
+	bind := flag.Bool("bind", false, "start with the gifts and the ritual circle open (campus only)")
+	bound := flag.Bool("bound", false, "start with the four starter spells already bound (campus only)")
+	autocast := flag.Bool("autocast", false, "cast the active spell every 40 ticks (campus only)")
 	flag.Parse()
 
 	var start engine.Scene
 	switch *scene {
 	case "campus":
-		c := &scenes.Campus{StartDialogue: *say, StartInventory: *inv}
+		c := &scenes.Campus{StartDialogue: *say, StartInventory: *inv, StartBinding: *bind, StartBound: *bound, AutoCast: *autocast}
 		if *at != "" {
 			if _, err := fmt.Sscanf(*at, "%d,%d", &c.StartX, &c.StartY); err != nil {
 				log.Fatalf("-at wants x,y tiles: %v", err)

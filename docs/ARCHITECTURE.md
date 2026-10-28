@@ -51,7 +51,18 @@ kept to the parts that are the same in every 2D game.
 - `dialogue/`: conversations from `assets/data/dialogue.json`, played by a
   `Runner` through the text box. A dialogue can hand out items and name the
   dialogue that replaces it afterwards.
-- `hud/`: the inventory panel and the "E: Talk" prompt.
+- `spells/`: the keyword table and synergy list from `assets/data/spells.json`
+  and `Resolve`, which folds a bag of keywords into one castable `Spell`
+  (shape, element, damage, heal, shield, count, speed, range, mana, tint,
+  name). Every keyword adds to shared properties; a synergy entry can rename
+  or tweak a combination. Unknown keywords show up in the name so typos are
+  visible.
+- `grimoire/`: the player's bound spells and four quick slots.
+- `combat/`: projectiles, shields, floating text and training dummies,
+  all drawn with shapes until there is art.
+- `hud/`: status bars and quick slots, the inventory panel, the ritual
+  circle binding screen (twelve ring slots plus a centre scroll slot,
+  mouse-driven), and the "E: Talk" prompt.
 - `scenes/`: `Campus` is the hub, built in `campus_map.go`; `Sandbox` is the
   step-1 winter clearing.
 
@@ -79,10 +90,25 @@ files in place (see `ASEPRITE.md`).
   there.
 - Floats for positions, whole pixels at draw time.
 
+## How a spell comes to be
+
+1. Items carry keywords (`spell_fireball` = `fire` + `ball`).
+2. The player stands in the ritual circle and places items on the twelve
+   ring slots and an empty scroll in the centre. Everything placed is
+   consumed on bind.
+3. `spells.Resolve` turns the keyword bag into a `Spell`; the synergy table
+   names known combinations (fire + ball = Fireball, fire + fire + ball =
+   Greater fireball) and the rest get a name from their keywords in order.
+4. The spell lands in the grimoire and the first free quick slot.
+5. Casting spends mana and runs the spell's shape: projectile, self, blink
+   or shield.
+
 ## Known gaps (on purpose, for now)
 
 - Buildings are facades: doors do not open until the system behind them
-  exists (scriptorium in step 3).
+  exists.
+- Only the four starter shapes exist; elements have no effects yet beyond
+  the tint, and synergies can only rename and multiply damage.
 - No audio, no gamepad bindings, no map editor import. Maps are built in code
   until the hub needs more than that.
 - The font is a stand-in 12px bitmap font; a 5x7 pixel font will replace

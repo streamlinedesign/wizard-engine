@@ -1,0 +1,22 @@
+{
+ "keywords": [
+  {"id": "fire", "label": "Fire", "order": 30, "element": "fire", "damage": 8, "mana": 4, "tint": [255, 140, 40]},
+  {"id": "ball", "label": "Ball", "order": 90, "shape": "projectile", "count": 1, "speed": 170, "size": 5, "range": 220, "mana": 2},
+  {"id": "life", "label": "Life", "order": 30, "element": "life", "heal": 12, "mana": 5, "tint": [120, 230, 140]},
+  {"id": "mend", "label": "Mend", "order": 90, "shape": "self", "mana": 1},
+  {"id": "void", "label": "Void", "order": 30, "element": "void", "mana": 5, "tint": [160, 110, 240]},
+  {"id": "step", "label": "Step", "order": 90, "shape": "blink", "range": 96, "mana": 2},
+  {"id": "ward", "label": "Ward", "order": 30, "element": "ward", "shield": 15, "mana": 4, "tint": [110, 190, 240]},
+  {"id": "shell", "label": "Shell", "order": 90, "shape": "shield", "duration": 8, "mana": 2},
+  {"id": "moon", "label": "Moon", "order": 10, "manaMult": 0.9},
+  {"id": "true", "label": "True", "order": 0, "damage": 20, "heal": 20, "shield": 20, "manaMult": 3}
+ ],
+ "synergies": [
+  {"keywords": ["fire", "ball"], "name": "Fireball"},
+  {"keywords": ["life", "mend"], "name": "Small heal"},
+  {"keywords": ["void", "step"], "name": "Minor teleport"},
+  {"keywords": ["ward", "shell"], "name": "Barrier"},
+  {"keywords": ["fire", "fire", "ball"], "name": "Greater fireball", "damageMult": 1.5},
+  {"keywords": ["fire", "ball", "ward"], "name": "Burning shell", "note": "a shield that hurts what touches it (effect to come)"}
+ ]
+}

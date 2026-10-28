@@ -105,6 +105,16 @@ func buildCampus(ts *tilemap.Tileset) *tilemap.Map {
 			m.Set(layerOverhead, x, y, 0)
 		}
 	}
+	// The ritual circle: a worn patch with nothing on it.
+	for y := circleTileY - 3; y <= circleTileY+3; y++ {
+		for x := circleTileX - 3; x <= circleTileX+3; x++ {
+			m.Set(layerProps, x, y, 0)
+			m.Set(layerOverhead, x, y, 0)
+			if m.Get(layerGround, x, y) != cPath {
+				m.Set(layerGround, x, y, cGrassWorn)
+			}
+		}
+	}
 	return m
 }
 

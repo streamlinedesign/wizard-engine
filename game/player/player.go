@@ -32,6 +32,11 @@ type Player struct {
 	// Collision box, relative to the feet point.
 	BoxW, BoxH float64
 
+	// Vitals. Mana refills over time; health only through spells for now.
+	HP, MaxHP     float64
+	Mana, MaxMana float64
+	ManaRegen     float64 // per second
+
 	Sprite *sprite.Sprite
 	Anim   *sprite.Animator
 	// Blocked, when set, reports whether a world rectangle hits something
@@ -44,11 +49,14 @@ type Player struct {
 func New(spr *sprite.Sprite, x, y float64) *Player {
 	return &Player{
 		X: x, Y: y,
-		Speed:  64,
-		BoxW:   10,
-		BoxH:   6,
-		Sprite: spr,
-		Anim:   sprite.NewAnimator(spr.Sheet, "idle_down"),
+		Speed: 64,
+		BoxW:  10,
+		BoxH:  6,
+		HP:    30, MaxHP: 30,
+		Mana: 20, MaxMana: 20,
+		ManaRegen: 2.5,
+		Sprite:    spr,
+		Anim:      sprite.NewAnimator(spr.Sheet, "idle_down"),
 	}
 }
 
@@ -83,6 +91,29 @@ func (p *Player) Update(ctx *engine.Context, m *tilemap.Map) {
 	}
 	p.Anim.Play(tag)
 	p.Anim.Advance(ctx.DT)
+	p.Mana = math.Min(p.MaxMana, p.Mana+p.ManaRegen*ctx.DT)
+}
+
+// Facing as a unit vector.
+func (p *Player) Dir() (dx, dy float64) {
+	switch p.Facing {
+	case Up:
+		return 0, -1
+	case Left:
+		return -1, 0
+	case Right:
+		return 1, 0
+	}
+	return 0, 1
+}
+
+// Spend takes mana if there is enough and reports whether it did.
+func (p *Player) Spend(mana float64) bool {
+	if p.Mana < mana {
+		return false
+	}
+	p.Mana -= mana
+	return true
 }
 
 // move tries a displacement along one axis and backs off to the last free

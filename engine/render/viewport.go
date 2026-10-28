@@ -18,6 +18,9 @@ type Viewport struct {
 	Border        color.Color
 
 	canvas *ebiten.Image
+	// winW, winH remember the last window size Present saw, so cursor
+	// positions can be mapped back onto the canvas.
+	winW, winH int
 }
 
 // NewViewport allocates a canvas of the given virtual size.
@@ -53,6 +56,7 @@ func Fit(canvasW, canvasH, windowW, windowH int) (scale, offX, offY int) {
 func (v *Viewport) Present(screen *ebiten.Image) {
 	screen.Fill(v.Border)
 	b := screen.Bounds()
+	v.winW, v.winH = b.Dx(), b.Dy()
 	scale, offX, offY := Fit(v.Width, v.Height, b.Dx(), b.Dy())
 
 	op := &ebiten.DrawImageOptions{}
@@ -66,5 +70,25 @@ func (v *Viewport) Present(screen *ebiten.Image) {
 // into canvas pixels. Points in the letterbox map outside the canvas.
 func (v *Viewport) WindowToCanvas(windowW, windowH, x, y int) (cx, cy int) {
 	scale, offX, offY := Fit(v.Width, v.Height, windowW, windowH)
-	return (x - offX) / scale, (y - offY) / scale
+	return floorDiv(x-offX, scale), floorDiv(y-offY, scale)
+}
+
+// Cursor returns the mouse position in canvas pixels, using the window
+// size from the last Present. Before the first frame it assumes 1:1.
+func (v *Viewport) Cursor() (cx, cy int) {
+	x, y := ebiten.CursorPosition()
+	if v.winW == 0 || v.winH == 0 {
+		return x, y
+	}
+	return v.WindowToCanvas(v.winW, v.winH, x, y)
+}
+
+// floorDiv divides rounding toward negative infinity, so points left of
+// or above the canvas stay negative instead of collapsing onto column 0.
+func floorDiv(a, b int) int {
+	q := a / b
+	if (a%b != 0) && ((a < 0) != (b < 0)) {
+		q--
+	}
+	return q
 }

@@ -24,6 +24,20 @@ func TestFit(t *testing.T) {
 	}
 }
 
+func TestWindowToCanvasFloors(t *testing.T) {
+	v := &Viewport{Width: 320, Height: 180}
+	// 1000x700 window: scale 3, offset (20, 80).
+	if x, y := v.WindowToCanvas(1000, 700, 20, 80); x != 0 || y != 0 {
+		t.Fatalf("origin: got (%d,%d)", x, y)
+	}
+	if x, y := v.WindowToCanvas(1000, 700, 19, 79); x != -1 || y != -1 {
+		t.Fatalf("just outside should be -1: got (%d,%d)", x, y)
+	}
+	if x, _ := v.WindowToCanvas(1000, 700, 20+3*319+2, 80); x != 319 {
+		t.Fatalf("last column: got %d", x)
+	}
+}
+
 func TestCameraClampsToBounds(t *testing.T) {
 	cam := NewCamera(320, 180)
 	cam.Bounds = &Rect{X: 0, Y: 0, W: 640, H: 360}
