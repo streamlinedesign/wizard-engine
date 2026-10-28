@@ -1,0 +1,6 @@
+# build outputs
+/sandbox
+/wizard-engine
+*.exe
+*.test
+*.out
