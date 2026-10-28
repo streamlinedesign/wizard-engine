@@ -1,0 +1,59 @@
+{
+ "items": [
+  {
+   "id": "scroll_empty",
+   "name": "Empty scroll",
+   "kind": "scroll",
+   "icon": 1,
+   "stackable": true,
+   "description": "Blank vellum. Bind a spell item to it at the scriptorium and the spell goes in your grimoire."
+  },
+  {
+   "id": "spell_fireball",
+   "name": "Fireball",
+   "kind": "spell",
+   "icon": 3,
+   "keywords": ["fire", "ball"],
+   "description": "A good old fireball. Everything starts here."
+  },
+  {
+   "id": "spell_small_heal",
+   "name": "Small heal",
+   "kind": "spell",
+   "icon": 4,
+   "keywords": ["life", "mend"],
+   "description": "Closes small wounds. Bigger ones need a bigger spell."
+  },
+  {
+   "id": "spell_minor_teleport",
+   "name": "Minor teleport",
+   "kind": "spell",
+   "icon": 5,
+   "keywords": ["step", "void"],
+   "description": "Blink to a spot you can see. Walls are not an opinion it respects."
+  },
+  {
+   "id": "spell_barrier",
+   "name": "Barrier",
+   "kind": "spell",
+   "icon": 6,
+   "keywords": ["ward", "shell"],
+   "description": "A shell of force that takes a few hits for you."
+  },
+  {
+   "id": "grimoire",
+   "name": "Grimoire",
+   "kind": "book",
+   "icon": 7,
+   "description": "Your spellbook. It has your name on it and no one else's."
+  },
+  {
+   "id": "coin",
+   "name": "Coin",
+   "kind": "misc",
+   "icon": 8,
+   "stackable": true,
+   "description": "Campus currency. Merchants like it."
+  }
+ ]
+}

@@ -169,8 +169,12 @@ func main() {
 	}
 	must(os.MkdirAll(filepath.Join(root, "sprites"), 0o755))
 	must(os.MkdirAll(filepath.Join(root, "tiles"), 0o755))
-	must(writeWizard(filepath.Join(root, "sprites")))
+	must(os.MkdirAll(filepath.Join(root, "icons"), 0o755))
+	must(writeWizard(filepath.Join(root, "sprites"), "wizard", palette))
+	must(writeWizard(filepath.Join(root, "sprites"), "oldwizard", oldWizardPalette()))
 	must(writeWinterTiles(filepath.Join(root, "tiles", "winter.png")))
+	must(writeCampusTiles(filepath.Join(root, "tiles", "campus.png")))
+	must(writeItemIcons(filepath.Join(root, "icons", "items.png")))
 	fmt.Println("placeholders written under", root)
 }
 
@@ -181,8 +185,24 @@ func must(err error) {
 	}
 }
 
+// oldWizardPalette recolours the player template into the teacher: grey
+// robe, white hair, a warmer gem.
+func oldWizardPalette() map[byte]color.RGBA {
+	p := map[byte]color.RGBA{}
+	for k, v := range palette {
+		p[k] = v
+	}
+	p['H'] = color.RGBA{96, 86, 110, 255}
+	p['h'] = color.RGBA{138, 126, 154, 255}
+	p['R'] = color.RGBA{118, 108, 132, 255}
+	p['r'] = color.RGBA{78, 70, 90, 255}
+	p['Y'] = color.RGBA{200, 160, 90, 255}
+	p['G'] = color.RGBA{255, 190, 90, 255}
+	return p
+}
+
 // writeWizard lays out rows: down (0-3), up (4-7), side (8-11).
-func writeWizard(dir string) error {
+func writeWizard(dir, name string, pal map[byte]color.RGBA) error {
 	rows := []struct {
 		name string
 		body []string
@@ -204,11 +224,11 @@ func writeWizard(dir string) error {
 			}
 			ox, oy := f*cellW, r*cellH
 			top := cellH - len(row.body) - len(row.legs[f]) - bob
-			blit(img, ox, oy+top, row.body)
-			blit(img, ox, oy+cellH-len(row.legs[f]), row.legs[f])
+			blit(img, ox, oy+top, row.body, pal)
+			blit(img, ox, oy+cellH-len(row.legs[f]), row.legs[f], pal)
 			idx := len(frames)
 			frames = append(frames, aseFrame{
-				Filename:         fmt.Sprintf("wizard %d.aseprite", idx),
+				Filename:         fmt.Sprintf("%s %d.aseprite", name, idx),
 				Frame:            aseRect{ox, oy, cellW, cellH},
 				SpriteSourceSize: aseRect{0, 0, cellW, cellH},
 				SourceSize:       aseSize{cellW, cellH},
@@ -221,14 +241,14 @@ func writeWizard(dir string) error {
 			aseTag{"walk_" + row.name, base, base + walkFrames - 1, "forward"},
 		)
 	}
-	if err := writePNG(filepath.Join(dir, "wizard.png"), img); err != nil {
+	if err := writePNG(filepath.Join(dir, name+".png"), img); err != nil {
 		return err
 	}
 	doc := map[string]any{
 		"frames": frames,
 		"meta": map[string]any{
 			"app":       "mkplaceholders (Aseprite-compatible)",
-			"image":     "wizard.png",
+			"image":     name + ".png",
 			"format":    "RGBA8888",
 			"size":      aseSize{img.Bounds().Dx(), img.Bounds().Dy()},
 			"scale":     "1",
@@ -239,13 +259,13 @@ func writeWizard(dir string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(dir, "wizard.json"), data, 0o644)
+	return os.WriteFile(filepath.Join(dir, name+".json"), data, 0o644)
 }
 
-func blit(img *image.RGBA, ox, oy int, rows []string) {
+func blit(img *image.RGBA, ox, oy int, rows []string, pal map[byte]color.RGBA) {
 	for y, row := range rows {
-		for x := 0; x < len(row) && x < cellW; x++ {
-			c, ok := palette[row[x]]
+		for x := 0; x < len(row); x++ {
+			c, ok := pal[row[x]]
 			if !ok || c.A == 0 {
 				continue
 			}

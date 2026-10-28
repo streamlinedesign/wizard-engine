@@ -34,12 +34,33 @@ kept to the parts that are the same in every 2D game.
   touches Ebitengine.
 - `tilemap/`: fixed-size tiles in layers over one tileset, with a solid flag
   per tile id, AABB collision against solid cells, and culled drawing.
+  `DrawLayerRows` draws a band of rows so scenes can interleave characters
+  with props for depth.
+- `ui/`: panels, text (a bitmap font for now) and a typewriter `TextBox`.
 
 ## game/
 
 - `player/`: the controlled wizard. Positioned by the feet, slides along
-  walls, picks `idle_*`/`walk_*` animations from facing.
-- `scenes/`: `Sandbox` is the step-1 clearing. The hub comes next.
+  walls, picks `idle_*`/`walk_*` animations from facing. `Blocked` lets a
+  scene add non-tile obstacles such as NPCs.
+- `npc/`: someone who stands, turns to face you when close, and talks.
+  Signs are NPCs without a sprite.
+- `items/`: item definitions loaded from `assets/data/items.json` and an
+  `Inventory` of stacks. Every item carries keywords; step 3 turns those
+  into spells.
+- `dialogue/`: conversations from `assets/data/dialogue.json`, played by a
+  `Runner` through the text box. A dialogue can hand out items and name the
+  dialogue that replaces it afterwards.
+- `hud/`: the inventory panel and the "E: Talk" prompt.
+- `scenes/`: `Campus` is the hub, built in `campus_map.go`; `Sandbox` is the
+  step-1 winter clearing.
+
+## Draw order in a scene
+
+Ground layer first. Then the props layer and the characters are merged by
+row: all prop rows above a character's feet, the character, and so on down
+the screen, so the wizard walks behind the bottom of a tree and in front of
+a fence. Last, the overhead layer (roofs, tree tops) over everything.
 
 ## assets/
 
@@ -60,7 +81,9 @@ files in place (see `ASEPRITE.md`).
 
 ## Known gaps (on purpose, for now)
 
-- No depth sorting yet: the wizard draws over tree tops instead of behind
-  them. Comes with the hub, where it matters.
+- Buildings are facades: doors do not open until the system behind them
+  exists (scriptorium in step 3).
 - No audio, no gamepad bindings, no map editor import. Maps are built in code
   until the hub needs more than that.
+- The font is a stand-in 12px bitmap font; a 5x7 pixel font will replace
+  it once the UI art exists.

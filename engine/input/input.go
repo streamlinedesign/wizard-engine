@@ -21,6 +21,7 @@ const (
 	Interact  Action = "interact"
 	Cast      Action = "cast"
 	Menu      Action = "menu"
+	Inventory Action = "inventory"
 )
 
 // Bindings maps each action to the keys that trigger it.
@@ -36,6 +37,7 @@ func DefaultBindings() Bindings {
 		Interact:  {ebiten.KeyE, ebiten.KeyEnter},
 		Cast:      {ebiten.KeySpace},
 		Menu:      {ebiten.KeyEscape},
+		Inventory: {ebiten.KeyTab, ebiten.KeyI},
 	}
 }
 

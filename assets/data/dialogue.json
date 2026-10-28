@@ -1,0 +1,45 @@
+{
+ "dialogues": {
+  "old_wizard_intro": {
+   "speaker": "Old wizard",
+   "pages": [
+    "Ah. A new face. You walked all the way up the hill, so you are either a student or lost.",
+    "Either way, you will want these. Four spells, four empty scrolls, and a grimoire with your name on it.",
+    "A spell is just an item until it is bound to a scroll. The scriptorium across the quad does the binding.",
+    "Fireball first. Everyone does fireball first. Come back when you have twelve of them and we will talk about the real one."
+   ],
+   "give": [
+    {"item": "spell_fireball", "count": 1},
+    {"item": "spell_small_heal", "count": 1},
+    {"item": "spell_minor_teleport", "count": 1},
+    {"item": "spell_barrier", "count": 1},
+    {"item": "scroll_empty", "count": 4},
+    {"item": "grimoire", "count": 1}
+   ],
+   "then": "old_wizard_again"
+  },
+  "old_wizard_again": {
+   "speaker": "Old wizard",
+   "pages": [
+    "The scriptorium is across the quad. The scribe talks too much, but she binds a clean scroll.",
+    "And read something in the library while you are here. Nobody ever does."
+   ]
+  },
+  "sign_gate": {
+   "speaker": "Sign",
+   "pages": ["The Collegium. Scriptorium and Library to the north, harbour to the east. Mind the fountain."]
+  },
+  "sign_scriptorium": {
+   "speaker": "Sign",
+   "pages": ["Scriptorium. Closed until step 3."]
+  },
+  "sign_library": {
+   "speaker": "Sign",
+   "pages": ["Great Library. Quiet, please. Also closed until later."]
+  },
+  "sign_harbour": {
+   "speaker": "Sign",
+   "pages": ["Harbour and boatyard. Blueprints wanted. Fishing permitted, catching not guaranteed."]
+  }
+ }
+}

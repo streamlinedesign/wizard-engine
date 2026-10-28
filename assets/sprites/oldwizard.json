@@ -1,0 +1,316 @@
+{
+ "frames": [
+  {
+   "filename": "oldwizard 0.aseprite",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 1.aseprite",
+   "frame": {
+    "x": 16,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 2.aseprite",
+   "frame": {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 3.aseprite",
+   "frame": {
+    "x": 48,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 4.aseprite",
+   "frame": {
+    "x": 0,
+    "y": 32,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 5.aseprite",
+   "frame": {
+    "x": 16,
+    "y": 32,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 6.aseprite",
+   "frame": {
+    "x": 32,
+    "y": 32,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 7.aseprite",
+   "frame": {
+    "x": 48,
+    "y": 32,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 8.aseprite",
+   "frame": {
+    "x": 0,
+    "y": 64,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 9.aseprite",
+   "frame": {
+    "x": 16,
+    "y": 64,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 10.aseprite",
+   "frame": {
+    "x": 32,
+    "y": 64,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  },
+  {
+   "filename": "oldwizard 11.aseprite",
+   "frame": {
+    "x": 48,
+    "y": 64,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   },
+   "duration": 140
+  }
+ ],
+ "meta": {
+  "app": "mkplaceholders (Aseprite-compatible)",
+  "format": "RGBA8888",
+  "frameTags": [
+   {
+    "name": "idle_down",
+    "from": 0,
+    "to": 0,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_down",
+    "from": 0,
+    "to": 3,
+    "direction": "forward"
+   },
+   {
+    "name": "idle_up",
+    "from": 4,
+    "to": 4,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_up",
+    "from": 4,
+    "to": 7,
+    "direction": "forward"
+   },
+   {
+    "name": "idle_side",
+    "from": 8,
+    "to": 8,
+    "direction": "forward"
+   },
+   {
+    "name": "walk_side",
+    "from": 8,
+    "to": 11,
+    "direction": "forward"
+   }
+  ],
+  "image": "oldwizard.png",
+  "scale": "1",
+  "size": {
+   "w": 64,
+   "h": 96
+  }
+ }
+}

@@ -16,8 +16,17 @@ import (
 	"github.com/streamlinedesign/wizard-engine/engine/sprite"
 )
 
-//go:embed sprites tiles
+//go:embed sprites tiles icons data
 var FS embed.FS
+
+// Data returns a raw embedded file, e.g. "data/items.json".
+func Data(name string) ([]byte, error) {
+	b, err := FS.ReadFile(name)
+	if err != nil {
+		return nil, fmt.Errorf("asset %s: %w", name, err)
+	}
+	return b, nil
+}
 
 var (
 	mu     sync.Mutex

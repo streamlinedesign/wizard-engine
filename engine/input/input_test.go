@@ -22,7 +22,7 @@ func TestNormalize(t *testing.T) {
 
 func TestDefaultBindingsCoverEveryAction(t *testing.T) {
 	b := DefaultBindings()
-	for _, a := range []Action{MoveUp, MoveDown, MoveLeft, MoveRight, Interact, Cast, Menu} {
+	for _, a := range []Action{MoveUp, MoveDown, MoveLeft, MoveRight, Interact, Cast, Menu, Inventory} {
 		if len(b[a]) == 0 {
 			t.Errorf("action %q has no default key", a)
 		}

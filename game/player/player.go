@@ -34,7 +34,10 @@ type Player struct {
 
 	Sprite *sprite.Sprite
 	Anim   *sprite.Animator
-	moving bool
+	// Blocked, when set, reports whether a world rectangle hits something
+	// that is not a tile (an NPC, a prop). Such hits stop the move outright.
+	Blocked func(x, y, w, h float64) bool
+	moving  bool
 }
 
 // New places a wizard at a feet position.
@@ -91,6 +94,9 @@ func (p *Player) move(m *tilemap.Map, dx, dy float64) {
 	nx, ny := p.X+dx, p.Y+dy
 	bx, by, bw, bh := nx-p.BoxW/2, ny-p.BoxH, p.BoxW, p.BoxH
 	if !m.Collides(bx, by, bw, bh) {
+		if p.Blocked != nil && p.Blocked(bx, by, bw, bh) {
+			return
+		}
 		p.X, p.Y = nx, ny
 		return
 	}
