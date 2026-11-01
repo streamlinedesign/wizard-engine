@@ -34,12 +34,13 @@ func main() {
 	bind := flag.Bool("bind", false, "start with the gifts and the ritual circle open (campus only)")
 	bound := flag.Bool("bound", false, "start with the four starter spells already bound (campus only)")
 	autocast := flag.Bool("autocast", false, "cast the active spell every 40 ticks (campus only)")
+	grim := flag.Bool("grimoire", false, "start with the starters bound and the grimoire open (campus only)")
 	flag.Parse()
 
 	var start engine.Scene
 	switch *scene {
 	case "campus":
-		c := &scenes.Campus{StartDialogue: *say, StartInventory: *inv, StartBinding: *bind, StartBound: *bound, AutoCast: *autocast}
+		c := &scenes.Campus{StartDialogue: *say, StartInventory: *inv, StartBinding: *bind, StartBound: *bound || *grim, StartGrimoire: *grim, AutoCast: *autocast}
 		if *at != "" {
 			if _, err := fmt.Sscanf(*at, "%d,%d", &c.StartX, &c.StartY); err != nil {
 				log.Fatalf("-at wants x,y tiles: %v", err)

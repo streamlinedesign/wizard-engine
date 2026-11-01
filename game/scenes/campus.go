@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -66,10 +67,13 @@ const (
 	circleRadius             = 36.0
 )
 
+// starterSpells are the four every wizard begins with (docs/DESIGN.md).
+var starterSpells = []string{"spell_fireball", "spell_minor_heal", "spell_thunderstrike", "spell_gust_of_wind"}
+
 // Campus is the hub: an open university of magic. The grounds, the old
-// wizard, signs, the inventory, the ritual circle for binding spells, and
-// training dummies to cast at. Buildings are facades until their systems
-// exist.
+// wizard, signs, the inventory, the ritual circle for binding spells, the
+// grimoire, and training dummies to cast at. Buildings are facades until
+// their systems exist.
 type Campus struct {
 	Map    *tilemap.Map
 	Player *player.Player
@@ -82,6 +86,7 @@ type Campus struct {
 	Book      *grimoire.Book
 	Talk      *dialogue.Runner
 	Panel     *hud.InventoryPanel
+	Grim      *hud.GrimoirePanel
 	Circle    *hud.Binding
 	Combat    combat.World
 	Shield    *combat.Shield
@@ -99,8 +104,18 @@ type Campus struct {
 	// StartBound grants the gifts and binds the four starters so casting
 	// works immediately.
 	StartBound bool
+	// StartGrimoire opens the grimoire on entry (with StartBound).
+	StartGrimoire bool
 	// AutoCast casts the active spell every 40 ticks (screenshots).
 	AutoCast bool
+
+	// Casting state: cooldowns per bound spell, and the spell being wound up.
+	cooldowns map[int]float64
+	casting   *spells.Spell
+	castIdx   int
+	castLeft  float64
+	castTotal float64
+	rng       *rand.Rand
 
 	nearest  *npc.NPC
 	inCircle bool
@@ -115,6 +130,8 @@ func (s *Campus) Enter(ctx *engine.Context) {
 	s.Dialogues = assets.Must(dialogue.ParseRegistry(assets.Must(assets.Data("data/dialogue.json"))))
 	s.Spells = assets.Must(spells.ParseTable(assets.Must(assets.Data("data/spells.json"))))
 	s.Book = grimoire.New("Uriel")
+	s.cooldowns = map[int]float64{}
+	s.rng = rand.New(rand.NewSource(1))
 
 	tiles := assets.Must(assets.Image("tiles/campus.png"))
 	ts := tilemap.NewTileset(tiles, 16,
@@ -124,6 +141,7 @@ func (s *Campus) Enter(ctx *engine.Context) {
 
 	icons := tilemap.NewTileset(assets.Must(assets.Image("icons/items.png")), 16)
 	s.Panel = hud.NewInventoryPanel(icons)
+	s.Grim = hud.NewGrimoirePanel()
 	s.Circle = hud.NewBinding(icons, s.Spells)
 	s.Circle.OnBind = func(sp spells.Spell) {
 		s.Book.Bind(sp)
@@ -182,12 +200,15 @@ func (s *Campus) applyDevStart() {
 		s.Panel.Open = true
 	}
 	if s.StartBound {
-		for _, id := range []string{"spell_fireball", "spell_small_heal", "spell_minor_teleport", "spell_barrier"} {
+		for _, id := range starterSpells {
 			d := s.Items.Must(id)
 			if s.Inventory.Remove(d, 1) && s.Inventory.Remove(s.Items.Must("scroll_empty"), 1) {
 				s.Book.Bind(s.Spells.Resolve(d.Keywords))
 			}
 		}
+	}
+	if s.StartGrimoire {
+		s.Grim.Open = true
 	}
 	if s.StartBinding {
 		s.Circle.Open = true
@@ -220,6 +241,12 @@ func (s *Campus) Update(ctx *engine.Context) error {
 	if s.Shield.Active() {
 		s.Shield.Left -= ctx.DT
 	}
+	for i := range s.cooldowns {
+		s.cooldowns[i] -= ctx.DT
+		if s.cooldowns[i] <= 0 {
+			delete(s.cooldowns, i)
+		}
+	}
 
 	if s.Talk.Active() {
 		s.Talk.Update(ctx)
@@ -228,12 +255,26 @@ func (s *Campus) Update(ctx *engine.Context) error {
 	if s.Circle.Update(ctx, ctx.Viewport.Canvas(), &s.Inventory) {
 		return nil
 	}
+	if s.Grim.Update(ctx, s.Book) {
+		return nil
+	}
 	if s.Panel.Update(ctx, &s.Inventory) {
 		return nil
 	}
 
+	// A spell with cast time holds the wizard still unless it is free fire.
+	s.Player.Frozen = s.casting != nil && !s.casting.FreeFire
 	s.Player.Update(ctx, s.Map)
 	ctx.Camera.Follow(s.Player.X, s.Player.Y-8)
+
+	if s.casting != nil {
+		s.castLeft -= ctx.DT
+		if s.castLeft <= 0 {
+			sp, idx := s.casting, s.castIdx
+			s.casting = nil
+			s.release(ctx, sp, idx)
+		}
+	}
 
 	// Standing in the circle's centre tile.
 	s.inCircle = math.Abs(s.Player.X-s.circleX) < 8 && math.Abs(s.Player.Y-s.circleY-4) < 8
@@ -262,10 +303,67 @@ func (s *Campus) Update(ctx *engine.Context) error {
 			s.Book.Selected = i
 		}
 	}
-	if ctx.Input.JustPressed(input.Cast) || ctx.Input.Clicked() || (s.AutoCast && ctx.Tick%40 == 0) {
-		s.cast(ctx)
+	sp := s.Book.Active()
+	pressed := ctx.Input.JustPressed(input.Cast) || ctx.Input.Clicked()
+	held := sp != nil && sp.Continuous && (ctx.Input.Down(input.Cast) || ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft))
+	if s.AutoCast && ctx.Tick%40 == 0 {
+		// Screenshots: walk through the four slots in turn.
+		s.Book.Selected = int(ctx.Tick/40) % 4
+		sp = s.Book.Active()
+		pressed = true
+	}
+	if pressed || held {
+		s.begin(sp, s.Book.Slots[s.Book.Selected], !pressed)
 	}
 	return nil
+}
+
+// begin starts a cast: checks cooldown and mana, spends the mana, and
+// either releases now or starts the wind-up. quiet suppresses the "no
+// mana" chatter for held continuous casts.
+func (s *Campus) begin(sp *spells.Spell, idx int, quiet bool) {
+	p := s.Player
+	if sp == nil {
+		if !quiet {
+			s.Combat.Say(p.X, p.Y-36, "no spell bound", uiDim)
+		}
+		return
+	}
+	if s.casting != nil {
+		return
+	}
+	if s.cooldowns[idx] > 0 {
+		if !quiet {
+			s.Combat.Say(p.X, p.Y-36, "cooling down", uiDim)
+		}
+		return
+	}
+	if !p.Spend(sp.Mana) {
+		if !quiet {
+			s.Combat.Say(p.X, p.Y-36, "no mana", uiDim)
+		}
+		return
+	}
+	s.cooldowns[idx] = math.Max(sp.Cooldown, 0.1)
+	if sp.CastTime <= 0 {
+		s.release(nil, sp, idx)
+		return
+	}
+	s.casting, s.castIdx = sp, idx
+	s.castLeft, s.castTotal = sp.CastTime, sp.CastTime
+}
+
+// cooldownFrac is how much of a quick slot's cooldown remains, 0..1.
+func (s *Campus) cooldownFrac(slot int) float64 {
+	sp := s.Book.Slot(slot)
+	if sp == nil {
+		return 0
+	}
+	left := s.cooldowns[s.Book.Slots[slot]]
+	if left <= 0 || sp.Cooldown <= 0 {
+		return 0
+	}
+	return math.Min(1, left/sp.Cooldown)
 }
 
 // solidAt reports whether a world point is inside a solid tile.
@@ -277,46 +375,52 @@ func (s *Campus) solidAt(x, y float64) bool {
 // cursor is on the canvas, otherwise the facing direction. AutoCast aims at
 // the nearest standing dummy so screenshots show hits.
 func (s *Campus) aim(ctx *engine.Context) (dx, dy float64) {
-	if s.AutoCast {
-		var best *combat.Dummy
-		bd := math.Inf(1)
-		for _, d := range s.Combat.Dummies {
-			if dd := dist(d.X, d.Y, s.Player.X, s.Player.Y); d.Alive() && dd < bd {
-				best, bd = d, dd
-			}
-		}
-		if best != nil {
-			return input.Normalize(best.X-s.Player.X, best.Y-10-(s.Player.Y-12))
-		}
+	if d := s.nearestDummy(); s.AutoCast && d != nil {
+		return input.Normalize(d.X-s.Player.X, d.Y-10-(s.Player.Y-12))
 	}
-	mx, my := ctx.Viewport.Cursor()
-	if mx >= 0 && my >= 0 && mx < ctx.Viewport.Width && my < ctx.Viewport.Height {
-		v := ctx.Camera.Visible()
-		wx, wy := v.X+float64(mx), v.Y+float64(my)
-		dx, dy = wx-s.Player.X, wy-(s.Player.Y-12)
-		if math.Hypot(dx, dy) > 4 {
-			return input.Normalize(dx, dy)
+	if ctx != nil {
+		mx, my := ctx.Viewport.Cursor()
+		if mx >= 0 && my >= 0 && mx < ctx.Viewport.Width && my < ctx.Viewport.Height {
+			v := ctx.Camera.Visible()
+			wx, wy := v.X+float64(mx), v.Y+float64(my)
+			dx, dy = wx-s.Player.X, wy-(s.Player.Y-12)
+			if math.Hypot(dx, dy) > 4 {
+				return input.Normalize(dx, dy)
+			}
 		}
 	}
 	return s.Player.Dir()
 }
 
-// cast fires the active spell.
-func (s *Campus) cast(ctx *engine.Context) {
-	sp := s.Book.Active()
+func (s *Campus) nearestDummy() *combat.Dummy {
+	var best *combat.Dummy
+	bd := math.Inf(1)
+	for _, d := range s.Combat.Dummies {
+		if dd := dist(d.X, d.Y, s.Player.X, s.Player.Y); d.Alive() && dd < bd {
+			best, bd = d, dd
+		}
+	}
+	return best
+}
+
+// release fires a spell whose wind-up is over: rolls fail and misfire,
+// then runs the shape.
+func (s *Campus) release(ctx *engine.Context, sp *spells.Spell, idx int) {
 	p := s.Player
-	if sp == nil {
-		s.Combat.Say(p.X, p.Y-36, "no spell bound", ui_dim)
-		return
-	}
-	if !p.Spend(sp.Mana) {
-		s.Combat.Say(p.X, p.Y-36, "no mana", ui_dim)
-		return
-	}
 	tint := color.RGBA{sp.Tint[0], sp.Tint[1], sp.Tint[2], 255}
+	if sp.Fail > 0 && s.rng.Float64() < sp.Fail {
+		s.Combat.Say(p.X, p.Y-36, "fizzle", uiDim)
+		return
+	}
+	dx, dy := s.aim(ctx)
+	if sp.Misfire > 0 && s.rng.Float64() < sp.Misfire {
+		// Misfire: the aim slips by up to 45 degrees either way.
+		a := math.Atan2(dy, dx) + (s.rng.Float64()*2-1)*math.Pi/4
+		dx, dy = math.Cos(a), math.Sin(a)
+		s.Combat.Say(p.X, p.Y-36, "misfire!", uiDim)
+	}
 	switch sp.Shape {
 	case spells.ShapeProjectile:
-		dx, dy := s.aim(ctx)
 		n := max(sp.Count, 1)
 		spread := 0.18 // radians between shots
 		for i := 0; i < n; i++ {
@@ -328,8 +432,6 @@ func (s *Campus) cast(ctx *engine.Context) {
 		p.HP = math.Min(p.MaxHP, p.HP+sp.Heal)
 		s.Combat.Say(p.X, p.Y-36, fmt.Sprintf("+%.0f", p.HP-before), tint)
 	case spells.ShapeBlink:
-		dx, dy := s.aim(ctx)
-		// Walk the path in small steps and stop before the first wall.
 		bx, by := p.X, p.Y
 		for d := 4.0; d <= sp.Range; d += 4 {
 			nx, ny := p.X+dx*d, p.Y+dy*d
@@ -343,12 +445,28 @@ func (s *Campus) cast(ctx *engine.Context) {
 		s.Combat.Say(p.X, p.Y-30, "*", tint)
 	case spells.ShapeShield:
 		s.Shield = &combat.Shield{HP: sp.Shield, MaxHP: sp.Shield, Left: sp.Duration, Tint: tint}
+	case spells.ShapeStrike:
+		// Strike the aim point at range, or the nearest dummy if it is
+		// closer along the way.
+		tx, ty := p.X+dx*sp.Range*0.7, p.Y-12+dy*sp.Range*0.7
+		if d := s.nearestDummy(); d != nil && dist(d.X, d.Y, p.X, p.Y) <= sp.Range {
+			tx, ty = d.X, d.Y-10
+		}
+		if s.Combat.StrikeAt(tx, ty, sp.Radius, sp.Damage, sp.Tint) == 0 {
+			s.Combat.Say(tx, ty-10, "crack", tint)
+		}
+	case spells.ShapeBuff:
+		p.Buff.Left = sp.Duration
+		p.Buff.Haste = sp.Haste
+		p.Buff.Dodge = sp.Dodge
+		p.Buff.Name = sp.Name
+		s.Combat.Say(p.X, p.Y-36, "whoosh", tint)
 	default:
-		s.Combat.Say(p.X, p.Y-36, "fizzle", ui_dim)
+		s.Combat.Say(p.X, p.Y-36, "fizzle", uiDim)
 	}
 }
 
-var ui_dim = color.RGBA{200, 190, 180, 255}
+var uiDim = color.RGBA{200, 190, 180, 255}
 
 func dist(ax, ay, bx, by float64) float64 {
 	return math.Hypot(ax-bx, ay-by)
@@ -391,7 +509,7 @@ func (s *Campus) Draw(ctx *engine.Context, canvas *ebiten.Image) {
 	s.Combat.DrawEffects(canvas, ox, oy)
 	s.Map.DrawLayerRows(canvas, layerOverhead, ox, oy, v.X, v.Y, v.W, v.H, 0, s.Map.Height-1)
 
-	uiOpen := s.Talk.Active() || s.Panel.Open || s.Circle.Open
+	uiOpen := s.Talk.Active() || s.Panel.Open || s.Circle.Open || s.Grim.Open
 	if !uiOpen {
 		if s.inCircle {
 			hud.Prompt(canvas, "E: Open the circle", s.Player.X+ox, s.Player.Y+oy-8)
@@ -404,10 +522,21 @@ func (s *Campus) Draw(ctx *engine.Context, canvas *ebiten.Image) {
 		}
 	}
 	if !s.Circle.Open {
-		hud.Status(canvas, s.Player.HP, s.Player.MaxHP, s.Player.Mana, s.Player.MaxMana, s.Book)
+		vit := hud.Vitals{
+			HP: s.Player.HP, MaxHP: s.Player.MaxHP,
+			Mana: s.Player.Mana, MaxMana: s.Player.MaxMana,
+			BuffName: s.Player.Buff.Name, BuffLeft: s.Player.Buff.Left,
+		}
+		if s.casting != nil {
+			vit.Casting = true
+			vit.CastFrac = 1 - s.castLeft/s.castTotal
+			vit.CastName = s.casting.Name
+		}
+		hud.Status(canvas, vit, s.Book, s.cooldownFrac)
 	}
 	s.Talk.Draw(canvas)
 	s.Panel.Draw(canvas, &s.Inventory)
+	s.Grim.Draw(canvas, s.Book)
 	s.Circle.Draw(canvas, &s.Inventory)
 
 	if s.Debug {

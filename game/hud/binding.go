@@ -258,7 +258,7 @@ func (b *Binding) Draw(canvas *ebiten.Image, inv *items.Inventory) {
 		}
 		ui.Print(canvas, sp.Name, 8, 20, ui.Parchment.PanelFill)
 		ui.Print(canvas, kw, 8, 32, ui.Parchment.TextDim)
-		ui.Print(canvas, fmt.Sprintf("%s, %.0f mana", describe(sp), sp.Mana), 8, 44, ui.Parchment.TextDim)
+		ui.Print(canvas, fmt.Sprintf("%s, %.0f mana, %.1fs cd", sp.Describe(), sp.Mana, sp.Cooldown), 8, 44, ui.Parchment.TextDim)
 	} else {
 		ui.Print(canvas, "Scroll in the centre, items on the ring.", 8, 20, ui.Parchment.TextDim)
 	}
@@ -290,18 +290,4 @@ func (b *Binding) Draw(canvas *ebiten.Image, inv *items.Inventory) {
 		ui.Print(canvas, label, l.listX+24, ry, b.Theme.Text)
 		ry += l.rowH
 	}
-}
-
-func describe(sp spells.Spell) string {
-	switch sp.Shape {
-	case spells.ShapeProjectile:
-		return fmt.Sprintf("%d shot, %.0f damage", max(sp.Count, 1), sp.Damage)
-	case spells.ShapeSelf:
-		return fmt.Sprintf("heals %.0f", sp.Heal)
-	case spells.ShapeBlink:
-		return fmt.Sprintf("blink %.0f px", sp.Range)
-	case spells.ShapeShield:
-		return fmt.Sprintf("shield %.0f for %.0fs", sp.Shield, sp.Duration)
-	}
-	return "no shape yet"
 }

@@ -266,7 +266,7 @@ func writeCampusTiles(out string) error {
 //	1 empty scroll  2 bound scroll  3 fireball   4 small heal
 //	5 minor teleport 6 barrier      7 grimoire   8 coin
 func writeItemIcons(out string) error {
-	const ts, cols = 16, 8
+	const ts, cols = 16, 10
 	img := image.NewRGBA(image.Rect(0, 0, ts*cols, ts))
 
 	outline := color.RGBA{38, 34, 46, 255}
@@ -349,6 +349,29 @@ func writeItemIcons(out string) error {
 	rect(ox, 4, 5, 11, 10, gold)
 	rect(ox, 7, 6, 8, 9, goldDark)
 	rect(ox, 5, 9, 10, 10, goldDark)
+	// thunderstrike: a bolt
+	ox = 8 * ts
+	bolt := color.RGBA{250, 240, 120, 255}
+	boltDark := color.RGBA{200, 170, 60, 255}
+	for _, p := range [][4]int{{8, 1, 10, 3}, {7, 4, 9, 6}, {5, 7, 10, 8}, {7, 9, 8, 11}, {6, 12, 7, 14}} {
+		rect(ox, p[0]-1, p[1], p[2]+1, p[3], outline)
+	}
+	for _, p := range [][4]int{{8, 1, 10, 3}, {7, 4, 9, 6}, {5, 7, 10, 8}, {7, 9, 8, 11}, {6, 12, 7, 14}} {
+		rect(ox, p[0], p[1], p[2], p[3], bolt)
+	}
+	rect(ox, 9, 2, 10, 3, boltDark)
+	rect(ox, 9, 7, 10, 8, boltDark)
+	// gust of wind: three curls
+	ox = 9 * ts
+	air := color.RGBA{200, 230, 240, 255}
+	airDark := color.RGBA{140, 180, 200, 255}
+	for i, y := range []int{4, 8, 12} {
+		x0 := 2 + i
+		rect(ox, x0, y, x0+8, y, airDark)
+		rect(ox, x0, y-1, x0+8, y-1, air)
+		rect(ox, x0+9, y-2, x0+10, y-1, air)
+		rect(ox, x0+10, y-3, x0+10, y-2, airDark)
+	}
 
 	return writePNG(out, img)
 }

@@ -1,22 +1,32 @@
 {
  "keywords": [
-  {"id": "fire", "label": "Fire", "order": 30, "element": "fire", "damage": 8, "mana": 4, "tint": [255, 140, 40]},
-  {"id": "ball", "label": "Ball", "order": 90, "shape": "projectile", "count": 1, "speed": 170, "size": 5, "range": 220, "mana": 2},
-  {"id": "life", "label": "Life", "order": 30, "element": "life", "heal": 12, "mana": 5, "tint": [120, 230, 140]},
-  {"id": "mend", "label": "Mend", "order": 90, "shape": "self", "mana": 1},
+  {"id": "fire", "label": "Fire", "order": 30, "element": "fire", "damage": 8, "mana": 4, "misfire": 0.05, "tint": [255, 140, 40]},
+  {"id": "ball", "label": "Ball", "order": 90, "shape": "projectile", "count": 1, "speed": 170, "size": 5, "range": 220, "mana": 2, "cooldown": 0.4},
+  {"id": "life", "label": "Life", "order": 30, "element": "life", "heal": 20, "mana": 8, "tint": [120, 230, 140]},
+  {"id": "mend", "label": "Mend", "order": 90, "shape": "self", "mana": 2, "castTime": 0.5, "cooldown": 3},
+  {"id": "thunder", "label": "Thunder", "order": 30, "element": "lightning", "damage": 12, "mana": 7, "fail": 0.05, "tint": [250, 240, 120]},
+  {"id": "strike", "label": "Strike", "order": 90, "shape": "strike", "range": 150, "radius": 18, "mana": 2, "castTime": 0.3, "cooldown": 1.5},
+  {"id": "gust", "label": "Gust", "order": 30, "element": "air", "haste": 0.6, "dodge": 0.3, "mana": 5, "tint": [200, 230, 240]},
+  {"id": "wind", "label": "Wind", "order": 90, "shape": "buff", "duration": 2, "mana": 1, "cooldown": 4, "freeFire": true},
   {"id": "void", "label": "Void", "order": 30, "element": "void", "mana": 5, "tint": [160, 110, 240]},
-  {"id": "step", "label": "Step", "order": 90, "shape": "blink", "range": 96, "mana": 2},
+  {"id": "step", "label": "Step", "order": 90, "shape": "blink", "range": 96, "mana": 2, "cooldown": 2},
   {"id": "ward", "label": "Ward", "order": 30, "element": "ward", "shield": 15, "mana": 4, "tint": [110, 190, 240]},
-  {"id": "shell", "label": "Shell", "order": 90, "shape": "shield", "duration": 8, "mana": 2},
+  {"id": "shell", "label": "Shell", "order": 90, "shape": "shield", "duration": 8, "mana": 2, "cooldown": 6},
   {"id": "moon", "label": "Moon", "order": 10, "manaMult": 0.9},
-  {"id": "true", "label": "True", "order": 0, "damage": 20, "heal": 20, "shield": 20, "manaMult": 3}
+  {"id": "true", "label": "True", "order": 0, "damage": 20, "heal": 20, "shield": 20, "manaMult": 3},
+  {"id": "rosemary", "label": "Rosemary", "order": 60, "radius": 10, "misfire": -0.05},
+  {"id": "candle", "label": "Candle", "order": 60, "amp": 0.1, "cooldownMult": 0.9},
+  {"id": "cloud", "label": "Cloud", "order": 20, "continuous": true, "freeFire": true, "mana": 1}
  ],
  "synergies": [
   {"keywords": ["fire", "ball"], "name": "Fireball"},
-  {"keywords": ["life", "mend"], "name": "Small heal"},
+  {"keywords": ["life", "mend"], "name": "Minor heal"},
+  {"keywords": ["thunder", "strike"], "name": "Thunderstrike"},
+  {"keywords": ["gust", "wind"], "name": "Gust of wind"},
   {"keywords": ["void", "step"], "name": "Minor teleport"},
   {"keywords": ["ward", "shell"], "name": "Barrier"},
   {"keywords": ["fire", "fire", "ball"], "name": "Greater fireball", "damageMult": 1.5},
+  {"keywords": ["thunder", "strike", "cloud"], "name": "Thundercloud", "note": "continuous, free fire"},
   {"keywords": ["fire", "ball", "ward"], "name": "Burning shell", "note": "a shield that hurts what touches it (effect to come)"}
  ]
 }

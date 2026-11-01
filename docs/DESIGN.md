@@ -29,9 +29,9 @@ rampage: that scene is made after the game is done, to showcase it quickly.
 3. Thunderstrike
 4. Gust of wind: +movement speed and dodge chance for 2 seconds
 
-*Engine: these are rows in `assets/data/items.json` and keywords in
-`spells.json`. The build currently has fireball, small heal, minor teleport
-and barrier as the four; swapping to this list is a data change.*
+*Engine: these are the four the old wizard gives, as rows in
+`assets/data/items.json` and keywords in `spells.json` (synced 2026-11-01).
+Teleport and barrier remain as items for later.*
 
 ## Stats
 
@@ -96,8 +96,9 @@ Gives a name if picked: "Thundercloud of eternal spears". And that has to
 be tankable by someone.
 
 *Engine: this is exactly the keyword model in `game/spells`: each item
-contributes to shared stats, synergies name and tweak combinations. Spell
-stats 2, 3, 5, 7, 8, 9, 10 are not in the resolver yet.*
+contributes to shared stats, synergies name and tweak combinations. All ten
+stats are in the resolver and the casting runtime as of 2026-11-01; see
+`docs/ARCHITECTURE.md`.*
 
 ### The 12 fireballs
 

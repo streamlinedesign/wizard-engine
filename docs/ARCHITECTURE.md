@@ -99,16 +99,30 @@ files in place (see `ASEPRITE.md`).
 3. `spells.Resolve` turns the keyword bag into a `Spell`; the synergy table
    names known combinations (fire + ball = Fireball, fire + fire + ball =
    Greater fireball) and the rest get a name from their keywords in order.
-4. The spell lands in the grimoire and the first free quick slot.
-5. Casting spends mana and runs the spell's shape: projectile, self, blink
-   or shield.
+4. The spell lands in the grimoire and the first free quick slot. The
+   grimoire (G) shows every bound spell with its ten stats and lets you put
+   any of them on the bar.
+5. Casting checks the slot's cooldown, spends mana, waits out the cast time
+   (the wizard stands still unless the spell is free fire), rolls fail
+   (nothing happens) and misfire (the aim slips), then runs the shape:
+   projectile, self, blink, shield, strike (hits a point at range) or buff
+   (timed haste and dodge). Continuous spells recast while the button is
+   held.
+
+The ten spell stats from the design notes: mana cost, cast time, cooldown,
+damage, spell amp, radius, fail rate, misfire, continuous, free fire. Each
+is a field on a keyword, so an ingredient like rosemary is just
+`"radius": 10, "misfire": -0.05`. Dodge is stored on the player's buff but
+nothing attacks yet, so it has no effect until enemies do.
 
 ## Known gaps (on purpose, for now)
 
 - Buildings are facades: doors do not open until the system behind them
   exists.
-- Only the four starter shapes exist; elements have no effects yet beyond
-  the tint, and synergies can only rename and multiply damage.
+- Elements have no effects yet beyond the tint, and synergies can only
+  rename and multiply damage.
+- Player stats beyond HP and mana (power, wisdom/age, def, luck) and gear
+  slots do not exist yet.
 - No audio, no gamepad bindings, no map editor import. Maps are built in code
   until the hub needs more than that.
 - The font is a stand-in 12px bitmap font; a 5x7 pixel font will replace

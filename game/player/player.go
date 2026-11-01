@@ -37,6 +37,16 @@ type Player struct {
 	Mana, MaxMana float64
 	ManaRegen     float64 // per second
 
+	// Buff is the timed stat change from a buff spell (gust of wind).
+	Buff struct {
+		Left  float64
+		Haste float64
+		Dodge float64
+		Name  string
+	}
+	// Frozen stops movement (while casting a spell with cast time).
+	Frozen bool
+
 	Sprite *sprite.Sprite
 	Anim   *sprite.Animator
 	// Blocked, when set, reports whether a world rectangle hits something
@@ -52,9 +62,9 @@ func New(spr *sprite.Sprite, x, y float64) *Player {
 		Speed: 64,
 		BoxW:  10,
 		BoxH:  6,
-		HP:    30, MaxHP: 30,
-		Mana: 20, MaxMana: 20,
-		ManaRegen: 2.5,
+		HP:    100, MaxHP: 100,
+		Mana: 200, MaxMana: 200,
+		ManaRegen: 8,
 		Sprite:    spr,
 		Anim:      sprite.NewAnimator(spr.Sheet, "idle_down"),
 	}
@@ -68,10 +78,19 @@ func (p *Player) Box() (x, y, w, h float64) {
 // Update reads input, moves with sliding collision, and picks an animation.
 func (p *Player) Update(ctx *engine.Context, m *tilemap.Map) {
 	dx, dy := ctx.Input.Axis()
+	if p.Frozen {
+		dx, dy = 0, 0
+	}
 	p.moving = dx != 0 || dy != 0
+	if p.Buff.Left > 0 {
+		p.Buff.Left -= ctx.DT
+	}
 
 	if p.moving {
 		step := p.Speed * ctx.DT
+		if p.Buff.Left > 0 {
+			step *= 1 + p.Buff.Haste
+		}
 		p.move(m, dx*step, 0)
 		p.move(m, 0, dy*step)
 		p.Facing = facingFrom(dx, dy, p.Facing)

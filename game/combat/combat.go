@@ -116,11 +116,42 @@ func (d *Dummy) Draw(dst *ebiten.Image, ox, oy float64) {
 	vector.DrawFilledRect(dst, x-8, y-29, w*float32(d.HP/d.MaxHP), 3, color.RGBA{200, 60, 60, 255}, false)
 }
 
+// Strike is a bolt from above at a point: a flash that fades.
+type Strike struct {
+	X, Y   float64
+	Radius float64
+	Left   float64
+	Tint   color.RGBA
+}
+
 // World owns every transient combat thing in a scene.
 type World struct {
 	Projectiles []*Projectile
+	Strikes     []*Strike
 	Texts       []*FloatText
 	Dummies     []*Dummy
+}
+
+// StrikeAt damages every standing dummy within radius of a point and adds
+// the flash. It returns how many were hit.
+func (w *World) StrikeAt(x, y, radius, dmg float64, tint [3]uint8) int {
+	w.Strikes = append(w.Strikes, &Strike{X: x, Y: y, Radius: radius, Left: 0.35,
+		Tint: color.RGBA{tint[0], tint[1], tint[2], 255}})
+	hits := 0
+	for _, d := range w.Dummies {
+		if !d.Alive() {
+			continue
+		}
+		if math.Hypot(d.X-x, d.Y-10-y) <= radius+6 {
+			hits++
+			fell := d.Hit(dmg)
+			w.Say(d.X, d.Y-28, fmt.Sprintf("%.0f", dmg), color.RGBA{255, 230, 120, 255})
+			if fell {
+				w.Say(d.X, d.Y-38, "down!", color.RGBA{255, 120, 120, 255})
+			}
+		}
+	}
+	return hits
 }
 
 // Fire adds a projectile from (x, y) heading along (dx, dy).
@@ -183,6 +214,15 @@ func (w *World) Update(dt float64, blocked func(x, y float64) bool) {
 	}
 	w.Projectiles = kept
 
+	strikes := w.Strikes[:0]
+	for _, s := range w.Strikes {
+		s.Left -= dt
+		if s.Left > 0 {
+			strikes = append(strikes, s)
+		}
+	}
+	w.Strikes = strikes
+
 	texts := w.Texts[:0]
 	for _, t := range w.Texts {
 		t.Left -= dt
@@ -208,6 +248,27 @@ func (w *World) DrawEffects(dst *ebiten.Image, ox, oy float64) {
 		vector.DrawFilledCircle(dst, x, y, r, p.Tint, false)
 		core := color.RGBA{255, 250, 220, 255}
 		vector.DrawFilledCircle(dst, x, y, r*0.45, core, false)
+	}
+	for _, s := range w.Strikes {
+		x, y := float32(s.X+ox), float32(s.Y+oy)
+		a := uint8(255 * math.Min(1, s.Left/0.35))
+		ring := s.Tint
+		ring.A = a / 2
+		vector.DrawFilledCircle(dst, x, y, float32(s.Radius), ring, false)
+		bolt := s.Tint
+		bolt.A = a
+		// Jagged bolt from the top of the canvas down to the point.
+		px, py := x+6, float32(-4)
+		for py < y {
+			ny := py + 14
+			nx := x + float32(math.Sin(float64(ny)*0.7))*5
+			if ny > y {
+				ny, nx = y, x
+			}
+			vector.StrokeLine(dst, px, py, nx, ny, 2, bolt, false)
+			px, py = nx, ny
+		}
+		vector.DrawFilledCircle(dst, x, y, 3, color.RGBA{255, 255, 230, a}, false)
 	}
 	for _, t := range w.Texts {
 		ui.Print(dst, t.Text, math.Floor(t.X+ox-ui.Width(t.Text)/2), math.Floor(t.Y+oy), t.Tint)

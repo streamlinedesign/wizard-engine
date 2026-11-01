@@ -25,7 +25,9 @@ func TestStarterSpellsResolve(t *testing.T) {
 		shape Shape
 	}{
 		{[]string{"fire", "ball"}, "Fireball", ShapeProjectile},
-		{[]string{"life", "mend"}, "Small heal", ShapeSelf},
+		{[]string{"life", "mend"}, "Minor heal", ShapeSelf},
+		{[]string{"thunder", "strike"}, "Thunderstrike", ShapeStrike},
+		{[]string{"gust", "wind"}, "Gust of wind", ShapeBuff},
 		{[]string{"void", "step"}, "Minor teleport", ShapeBlink},
 		{[]string{"ward", "shell"}, "Barrier", ShapeShield},
 	}
@@ -83,5 +85,36 @@ func TestParseRejectsUnknownSynergyKeyword(t *testing.T) {
 	_, err := ParseTable([]byte(`{"keywords":[{"id":"a"}],"synergies":[{"keywords":["a","zzz"],"name":"x"}]}`))
 	if err == nil {
 		t.Fatal("expected error")
+	}
+}
+
+func TestTenStatsFromKeywords(t *testing.T) {
+	tb := table(t)
+	plain := tb.Resolve([]string{"thunder", "strike"})
+	if plain.CastTime != 0.3 || plain.Cooldown != 1.5 || plain.Fail != 0.05 || plain.Radius != 18 {
+		t.Fatalf("thunderstrike stats wrong: %+v", plain)
+	}
+	tuned := tb.Resolve([]string{"thunder", "strike", "rosemary", "candle", "cloud"})
+	if tuned.Radius != 28 {
+		t.Fatalf("rosemary should add radius: %v", tuned.Radius)
+	}
+	if tuned.Damage <= plain.Damage {
+		t.Fatalf("candle amp should raise damage: %v vs %v", tuned.Damage, plain.Damage)
+	}
+	if tuned.Cooldown >= plain.Cooldown {
+		t.Fatalf("candle should cut cooldown: %v vs %v", tuned.Cooldown, plain.Cooldown)
+	}
+	if !tuned.Continuous || !tuned.FreeFire {
+		t.Fatal("cloud should make it continuous and free fire")
+	}
+	if tuned.Name != "Thundercloud" {
+		t.Fatalf("got %q", tuned.Name)
+	}
+	if len(tuned.StatLines()) != 10 {
+		t.Fatal("ten stats, ten lines")
+	}
+	neg := tb.Resolve([]string{"rosemary"})
+	if neg.Misfire != 0 {
+		t.Fatalf("misfire must clamp at 0, got %v", neg.Misfire)
 	}
 }
