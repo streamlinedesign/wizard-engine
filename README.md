@@ -19,8 +19,13 @@ sudo apt install libgl1-mesa-dev libxcursor-dev libxrandr-dev libxinerama-dev li
 Then:
 
 ```
-go run ./cmd/sandbox
+make dev
 ```
+
+(`make help` lists every target; `make build` writes one binary at
+`./wizard`, `make test` runs the tests headless.) The game opens a window
+and listens on no port; port 4160 is reserved for tool servers under
+`tools/`.
 
 You start at the campus gate. WASD or arrows to walk, E to talk, read or
 open the ritual circle, Tab or I for the inventory, G for the grimoire, 1 to
@@ -54,14 +59,15 @@ assets/             art and data, embedded into the binary
   data/items.json      every item: name, kind, icon, keywords, description
   data/dialogue.json   every conversation: speaker, pages, gifts, follow-up
   data/spells.json     keyword table (what each keyword adds) and synergies
-tools/mkplaceholders generates the stand-in art under assets/
+tools/mkplaceholders generates the stand-in art under assets/ (make placeholders)
+tools/mockup        renders the campus in several art styles (make mockup)
 docs/               ARCHITECTURE.md (how it fits together), ASEPRITE.md (art spec)
 ```
 
 ## Tests
 
 ```
-go test ./...
+make test
 ```
 
 The engine packages are written so the logic (camera maths, animation

@@ -1,6 +1,17 @@
 # build outputs
 /sandbox
+/wizard
+/wizard-linux-amd64
 /wizard-engine
+/mockup/
 *.exe
 *.test
 *.out
+.dev-server
+
+# local config
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
