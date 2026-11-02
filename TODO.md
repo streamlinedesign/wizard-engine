@@ -15,7 +15,8 @@
 - Doors: let the campus facades open once a building has something inside
 - Replace the 12px stand-in bitmap font with the 5x7 pixel font once UI art
   exists
-- Real Aseprite art in place of `tools/mkplaceholders` output
+- Real Aseprite art in place of `tools/mkplaceholders` output, drawn to
+  `artpack/README.md` (start with the player wizard)
 - Audio and gamepad bindings
 - Bring the "Wizard game to-do" project doc that `docs/DESIGN.md` points at
   into the repo, or link it

@@ -42,6 +42,9 @@ placeholders: ## Regenerate the stand-in art under assets/
 mockup: ## Render the campus scene in each art style to mockup/
 	go run ./tools/mockup mockup/
 
+artpack: ## Regenerate artpack/palette.gpl and the guide sheets for Aseprite
+	go run ./tools/mkartpack
+
 screenshot: ## Render one frame of the campus to docs/campus.png
 	go run ./cmd/sandbox -screenshot docs/campus.png -ticks 60
 
@@ -77,4 +80,4 @@ configure-repo: ## One-time GitHub settings: auto-merge, Actions may open PRs, m
 clean: ## Remove build output
 	rm -rf $(NAME) $(NAME)-linux-amd64 sandbox wizard-engine mockup *.test *.out
 
-.PHONY: help dev test build lint placeholders mockup screenshot db-reset db-seed psql deploy release configure-repo clean
+.PHONY: help dev test build lint placeholders mockup artpack screenshot db-reset db-seed psql deploy release configure-repo clean

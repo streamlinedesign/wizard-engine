@@ -1,0 +1,48 @@
+GIMP Palette
+Name: Wizard Engine style B
+Columns: 8
+#
+ 38  34  46	outline
+ 26  24  34	shadow
+ 92 118  72	grass
+ 74  96  58	grass dark
+108 134  84	grass light
+128 118 106	stone
+104  96  86	stone dark
+146 136 124	stone light
+156 148 138	plaza
+ 52  84 112	water
+ 78 112 142	water light
+ 78  72  88	slate
+ 58  52  66	slate dark
+ 96  90 108	slate light
+190 178 158	plaster
+160 148 130	plaster dark
+ 90  66  48	timber
+130  96  62	wood
+160 124  84	wood light
+ 62  96  62	leaf
+ 42  68  46	leaf dark
+ 84 118  76	leaf light
+ 74  54  40	trunk
+ 56  60 100	robe
+ 38  40  70	robe shade
+ 44  46  80	hat
+ 66  70 112	hat light
+214 176 142	skin
+178 140 110	skin shade
+206 204 208	beard
+206 170  90	belt gold
+240 200 120	lamp glow
+236 226 200	parchment
+200 186 150	parchment dark
+ 40  30  40	ink
+170  50  60	wax red
+255 140  40	fire
+255 230 120	fire core
+120 230 140	life green
+160 110 240	void purple
+110 190 240	ward blue
+250 240 120	thunder yellow
+200 230 240	air
+246 246 240	white

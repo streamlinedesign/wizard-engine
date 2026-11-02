@@ -61,6 +61,8 @@ assets/             art and data, embedded into the binary
   data/spells.json     keyword table (what each keyword adds) and synergies
 tools/mkplaceholders generates the stand-in art under assets/ (make placeholders)
 tools/mockup        renders the campus in several art styles (make mockup)
+tools/mkartpack     writes artpack/ (palette + guide sheets, make artpack)
+artpack/            the art blueprint for Aseprite: README.md, palette.gpl, guides/
 docs/               ARCHITECTURE.md (how it fits together), ASEPRITE.md (art spec)
 ```
 
