@@ -16,7 +16,7 @@ import (
 	"github.com/streamlinedesign/wizard-engine/engine/sprite"
 )
 
-//go:embed sprites tiles icons data
+//go:embed sprites tiles icons data effects
 var FS embed.FS
 
 // Data returns a raw embedded file, e.g. "data/items.json".
@@ -64,12 +64,17 @@ func Sprite(jsonName string) (*sprite.Sprite, error) {
 	if err != nil {
 		return nil, fmt.Errorf("asset %s: %w", jsonName, err)
 	}
-	imgName := path.Join(path.Dir(jsonName), path.Base(sheet.Image))
+	imgName := pathNext(jsonName, sheet.Image)
 	img, err := Image(imgName)
 	if err != nil {
 		return nil, err
 	}
 	return &sprite.Sprite{Sheet: sheet, Image: img}, nil
+}
+
+// pathNext is the embedded path of a file named next to another.
+func pathNext(beside, name string) string {
+	return path.Join(path.Dir(beside), path.Base(name))
 }
 
 // Must panics on error; for assets that are compiled in and must exist.

@@ -9,8 +9,8 @@ dropping it into `assets/` is all that is needed; no code changes.
   top-to-bottom, any number of columns. Tile 1 is the top-left cell (0 means
   "nothing"). Keep ground tiles opaque and prop tiles (trees, fences, lamps)
   transparent where the ground should show through.
-- Characters: 16x32 cells, feet on the bottom row (row 31), centred
-  horizontally. Hats and staffs can use the full height. The engine's
+- Characters: 16x40 cells (the player wizard; the old wizard is still a
+  16x32 placeholder), feet on the bottom row, centred horizontally. Hats and staffs can use the full height. The engine's
   collision box is about 10x6 pixels at the feet, so a character can stand
   closer to things than its sprite suggests.
 - Larger things (bosses, ships) can be any multiple; the engine reads the
@@ -28,10 +28,41 @@ The engine looks these up by name:
 | `walk_up`    | 4      |                                        |
 | `idle_side`  | 1+     | facing **right**; the engine flips it  |
 | `walk_side`  | 4      |                                        |
+| `cast_down`, `cast_up`, `cast_side` | 4 | staff raised, release on frame 2; played once on every cast |
+| `hurt`       | 2      | not played yet                         |
+| `meditate`   | 4      | loop, sitting; not played yet          |
 
 Frame durations come from Aseprite (140 ms per walk frame feels right at
 this scale). Tag direction (forward / reverse / ping-pong) is honoured.
-Spell casting, hurt and so on will be added to this table when they exist.
+One-shot tags (cast, hurt, effects that play once) set Aseprite's repeat
+to 1 so the engine knows when they are done.
+
+## Spell effects
+
+`assets/effects/<name>.png` + `.json`, same Aseprite export, drawn with the
+centre of the cell on the point the game gives. 32x32 cells unless noted.
+
+| file | tags | used for |
+|---|---|---|
+| `fireball` | `fly` (4, loop, points right; the engine rotates it), `hit` (6) | fire projectiles and their impact |
+| `heal` | `self` (8) | minor heal, on the caster |
+| `thunder` | `strike` (6) | thunderstrike; impact at the bottom centre, row 27. The engine draws the bolt above the cell |
+| `gust` | `self` (6) | gust of wind, on the caster |
+| `barrier` | `appear` (3), `hold` (4, loop), `break` (3); 48x48 | barrier bubble (`break` not played yet) |
+| `teleport` | `out` (5), `in` (5) | minor teleport, at both ends |
+| `hit` | `hit` (3) | impact of any projectile without its own art |
+| `puff` | `puff` (4); 16x16 | footstep dust (not played yet) |
+
+Elements other than fire still draw their projectile as a circle until a
+recolour of the fireball exists.
+
+## Where the current art comes from
+
+The wizard, the effects and the campus tileset are drawn by the scripts in
+`art/gen/` (Python + Pillow, every pixel placed from the palette below).
+`make art` redraws them into `assets/` and the previews into `docs/art/`.
+An Aseprite export of the same name replaces any of them; the scripts are
+then retired for that file.
 
 ## Export settings
 

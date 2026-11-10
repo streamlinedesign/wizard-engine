@@ -1,6 +1,7 @@
 // Package combat holds the things a cast creates and the things it hits:
-// projectiles, shields, floating damage numbers, and training dummies. All
-// drawn with shapes until there is art for them.
+// projectiles, shields, floating damage numbers, and training dummies.
+// Spells with art in assets/effects draw from it (see fx.go); the rest are
+// drawn with shapes until they have art.
 package combat
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 
+	"github.com/streamlinedesign/wizard-engine/engine/sprite"
 	"github.com/streamlinedesign/wizard-engine/engine/ui"
 )
 
@@ -23,6 +25,7 @@ type Projectile struct {
 	Left     float64 // range remaining in pixels
 	Tint     color.RGBA
 	Pierce   int
+	Element  string // picks the art in projectileArt; "" draws a circle
 	age      float64
 	hitThing map[*Dummy]bool
 }
@@ -32,6 +35,7 @@ type Shield struct {
 	HP, MaxHP float64
 	Left      float64
 	Tint      color.RGBA
+	Age       float64 // seconds since cast; the scene advances it
 }
 
 // Active reports whether the shield still stands.
@@ -130,6 +134,10 @@ type World struct {
 	Strikes     []*Strike
 	Texts       []*FloatText
 	Dummies     []*Dummy
+	FX          []*FX
+	// Effects holds the spell art by name ("fireball", "thunder", ...),
+	// loaded by the scene from assets/effects.
+	Effects map[string]*sprite.Sprite
 }
 
 // StrikeAt damages every standing dummy within radius of a point and adds
@@ -137,6 +145,8 @@ type World struct {
 func (w *World) StrikeAt(x, y, radius, dmg float64, tint [3]uint8) int {
 	w.Strikes = append(w.Strikes, &Strike{X: x, Y: y, Radius: radius, Left: 0.35,
 		Tint: color.RGBA{tint[0], tint[1], tint[2], 255}})
+	// The thunder cell's impact point is its bottom centre (row 27 of 32).
+	w.Play("thunder", "strike", x, y-11)
 	hits := 0
 	for _, d := range w.Dummies {
 		if !d.Alive() {
@@ -154,18 +164,20 @@ func (w *World) StrikeAt(x, y, radius, dmg float64, tint [3]uint8) int {
 	return hits
 }
 
-// Fire adds a projectile from (x, y) heading along (dx, dy).
-func (w *World) Fire(x, y, dx, dy, speed, size, dmg, rng float64, tint [3]uint8) {
+// Fire adds a projectile from (x, y) heading along (dx, dy) and returns it.
+func (w *World) Fire(x, y, dx, dy, speed, size, dmg, rng float64, tint [3]uint8) *Projectile {
 	l := math.Hypot(dx, dy)
 	if l == 0 {
 		dx, dy, l = 0, 1, 1
 	}
-	w.Projectiles = append(w.Projectiles, &Projectile{
+	p := &Projectile{
 		X: x, Y: y, VX: dx / l * speed, VY: dy / l * speed,
 		Size: size, Damage: dmg, Left: rng,
 		Tint:     color.RGBA{tint[0], tint[1], tint[2], 255},
 		hitThing: map[*Dummy]bool{},
-	})
+	}
+	w.Projectiles = append(w.Projectiles, p)
+	return p
 }
 
 // Say adds floating text at a world point.
@@ -210,9 +222,14 @@ func (w *World) Update(dt float64, blocked func(x, y float64) bool) {
 		}
 		if alive {
 			kept = append(kept, p)
+		} else if name, ok := projectileArt[p.Element]; ok {
+			w.Play(name, "hit", p.X, p.Y)
+		} else {
+			w.Play("hit", "hit", p.X, p.Y)
 		}
 	}
 	w.Projectiles = kept
+	w.updateFX(dt)
 
 	strikes := w.Strikes[:0]
 	for _, s := range w.Strikes {
@@ -237,7 +254,14 @@ func (w *World) Update(dt float64, blocked func(x, y float64) bool) {
 // DrawBelow draws dummies (they are world objects with feet, so the scene
 // depth-sorts them; this is called per dummy from the scene).
 func (w *World) DrawEffects(dst *ebiten.Image, ox, oy float64) {
+	w.drawFX(dst, ox, oy)
 	for _, p := range w.Projectiles {
+		if spr := w.Effects[projectileArt[p.Element]]; spr != nil {
+			if fr, ok := frameAt(spr.Sheet, "fly", p.age); ok {
+				drawRotated(dst, spr, fr, p.X+ox, p.Y+oy, math.Atan2(p.VY, p.VX))
+				continue
+			}
+		}
 		x, y := float32(p.X+ox), float32(p.Y+oy)
 		r := float32(p.Size)
 		// Trail
@@ -252,6 +276,18 @@ func (w *World) DrawEffects(dst *ebiten.Image, ox, oy float64) {
 	for _, s := range w.Strikes {
 		x, y := float32(s.X+ox), float32(s.Y+oy)
 		a := uint8(255 * math.Min(1, s.Left/0.35))
+		if w.Effects["thunder"] != nil {
+			// The sprite (played by StrikeAt) is the last 28 pixels of the
+			// bolt and the impact; draw the rest of it from the sky.
+			if s.Left > 0.2 {
+				top := y - 27
+				for _, o := range []float32{-1, 1} {
+					vector.StrokeLine(dst, x+o, -4, x+o, top, 1, color.RGBA{250, 240, 120, 255}, false)
+				}
+				vector.StrokeLine(dst, x, -4, x, top, 1, color.RGBA{246, 246, 240, 255}, false)
+			}
+			continue
+		}
 		ring := s.Tint
 		ring.A = a / 2
 		vector.DrawFilledCircle(dst, x, y, float32(s.Radius), ring, false)
@@ -275,10 +311,21 @@ func (w *World) DrawEffects(dst *ebiten.Image, ox, oy float64) {
 	}
 }
 
-// DrawShield draws a bubble around a feet point.
-func DrawShield(dst *ebiten.Image, s *Shield, x, y float64) {
+// DrawShield draws a bubble around a feet point, from the barrier art when
+// the world has it.
+func (w *World) DrawShield(dst *ebiten.Image, s *Shield, x, y float64) {
 	if !s.Active() {
 		return
+	}
+	if spr := w.Effects["barrier"]; spr != nil {
+		tag, t := "hold", s.Age
+		if appear := spr.Sheet.Tags["appear"]; t < 0.18 && appear.To > appear.From {
+			tag = "appear"
+		}
+		if fr, ok := frameAt(spr.Sheet, tag, t); ok {
+			spr.Draw(dst, fr, math.Floor(x-float64(fr.Size.X)/2), math.Floor(y-14-float64(fr.Size.Y)/2), false)
+			return
+		}
 	}
 	c := s.Tint
 	c.A = 90
