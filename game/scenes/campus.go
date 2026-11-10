@@ -147,6 +147,11 @@ func (s *Campus) Enter(ctx *engine.Context) {
 		s.Book.Bind(sp)
 	}
 
+	s.Combat.Effects = map[string]*sprite.Sprite{}
+	for _, name := range []string{"fireball", "heal", "thunder", "gust", "barrier", "teleport", "hit", "puff"} {
+		s.Combat.Effects[name] = assets.Must(assets.Sprite("effects/" + name + ".json"))
+	}
+
 	spr := assets.Must(assets.Sprite("sprites/wizard.json"))
 	s.Player = player.New(spr, 30*16+8, 44*16)
 	if s.StartX != 0 || s.StartY != 0 {
@@ -240,6 +245,7 @@ func (s *Campus) Update(ctx *engine.Context) error {
 	s.Combat.Update(ctx.DT, s.solidAt)
 	if s.Shield.Active() {
 		s.Shield.Left -= ctx.DT
+		s.Shield.Age += ctx.DT
 	}
 	for i := range s.cooldowns {
 		s.cooldowns[i] -= ctx.DT
@@ -407,6 +413,7 @@ func (s *Campus) nearestDummy() *combat.Dummy {
 // then runs the shape.
 func (s *Campus) release(ctx *engine.Context, sp *spells.Spell, idx int) {
 	p := s.Player
+	p.Cast()
 	tint := color.RGBA{sp.Tint[0], sp.Tint[1], sp.Tint[2], 255}
 	if sp.Fail > 0 && s.rng.Float64() < sp.Fail {
 		s.Combat.Say(p.X, p.Y-36, "fizzle", uiDim)
@@ -425,11 +432,13 @@ func (s *Campus) release(ctx *engine.Context, sp *spells.Spell, idx int) {
 		spread := 0.18 // radians between shots
 		for i := 0; i < n; i++ {
 			a := math.Atan2(dy, dx) + (float64(i)-float64(n-1)/2)*spread
-			s.Combat.Fire(p.X, p.Y-12, math.Cos(a), math.Sin(a), sp.Speed, sp.Size, sp.Damage, sp.Range, sp.Tint)
+			pr := s.Combat.Fire(p.X, p.Y-12, math.Cos(a), math.Sin(a), sp.Speed, sp.Size, sp.Damage, sp.Range, sp.Tint)
+			pr.Element = sp.Element
 		}
 	case spells.ShapeSelf:
 		before := p.HP
 		p.HP = math.Min(p.MaxHP, p.HP+sp.Heal)
+		s.Combat.Play("heal", "self", p.X, p.Y-16)
 		s.Combat.Say(p.X, p.Y-36, fmt.Sprintf("+%.0f", p.HP-before), tint)
 	case spells.ShapeBlink:
 		bx, by := p.X, p.Y
@@ -440,9 +449,9 @@ func (s *Campus) release(ctx *engine.Context, sp *spells.Spell, idx int) {
 			}
 			bx, by = nx, ny
 		}
-		s.Combat.Say(p.X, p.Y-30, "*", tint)
+		s.Combat.Play("teleport", "out", p.X, p.Y-13)
 		p.X, p.Y = bx, by
-		s.Combat.Say(p.X, p.Y-30, "*", tint)
+		s.Combat.Play("teleport", "in", p.X, p.Y-13)
 	case spells.ShapeShield:
 		s.Shield = &combat.Shield{HP: sp.Shield, MaxHP: sp.Shield, Left: sp.Duration, Tint: tint}
 	case spells.ShapeStrike:
@@ -460,7 +469,7 @@ func (s *Campus) release(ctx *engine.Context, sp *spells.Spell, idx int) {
 		p.Buff.Haste = sp.Haste
 		p.Buff.Dodge = sp.Dodge
 		p.Buff.Name = sp.Name
-		s.Combat.Say(p.X, p.Y-36, "whoosh", tint)
+		s.Combat.Play("gust", "self", p.X, p.Y-16)
 	default:
 		s.Combat.Say(p.X, p.Y-36, "fizzle", uiDim)
 	}
@@ -483,7 +492,7 @@ func (s *Campus) Draw(ctx *engine.Context, canvas *ebiten.Image) {
 	chars := make([]drawable, 0, len(s.NPCs)+len(s.Combat.Dummies)+1)
 	chars = append(chars, drawable{s.Player.Y, func() {
 		s.Player.Draw(canvas, ox, oy)
-		combat.DrawShield(canvas, s.Shield, s.Player.X+ox, s.Player.Y+oy)
+		s.Combat.DrawShield(canvas, s.Shield, s.Player.X+ox, s.Player.Y+oy)
 	}})
 	for _, n := range s.NPCs {
 		if n.Sprite != nil {

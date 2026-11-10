@@ -53,6 +53,7 @@ type Player struct {
 	// that is not a tile (an NPC, a prop). Such hits stop the move outright.
 	Blocked func(x, y, w, h float64) bool
 	moving  bool
+	casting bool // a cast_* animation is playing
 }
 
 // New places a wizard at a feet position.
@@ -67,6 +68,27 @@ func New(spr *sprite.Sprite, x, y float64) *Player {
 		ManaRegen: 8,
 		Sprite:    spr,
 		Anim:      sprite.NewAnimator(spr.Sheet, "idle_down"),
+	}
+}
+
+// dirName is the animation suffix for the facing: down, up or side.
+func (p *Player) dirName() string {
+	switch p.Facing {
+	case Up:
+		return "up"
+	case Left, Right:
+		return "side"
+	}
+	return "down"
+}
+
+// Cast plays the cast animation for the current facing (staff raised,
+// release on frame 2), if the sheet has one.
+func (p *Player) Cast() {
+	tag := "cast_" + p.dirName()
+	if _, ok := p.Sprite.Sheet.Tags[tag]; ok {
+		p.Anim.Restart(tag)
+		p.casting = true
 	}
 }
 
@@ -100,13 +122,11 @@ func (p *Player) Update(ctx *engine.Context, m *tilemap.Map) {
 	if p.moving {
 		tag = "walk_"
 	}
-	switch p.Facing {
-	case Up:
-		tag += "up"
-	case Left, Right:
-		tag += "side"
-	default:
-		tag += "down"
+	tag += p.dirName()
+	if p.casting && !p.moving && !p.Anim.Finished() {
+		tag = p.Anim.Tag() // let the cast play out
+	} else {
+		p.casting = false
 	}
 	p.Anim.Play(tag)
 	p.Anim.Advance(ctx.DT)

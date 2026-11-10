@@ -59,7 +59,8 @@ assets/             art and data, embedded into the binary
   data/items.json      every item: name, kind, icon, keywords, description
   data/dialogue.json   every conversation: speaker, pages, gifts, follow-up
   data/spells.json     keyword table (what each keyword adds) and synergies
-tools/mkplaceholders generates the stand-in art under assets/ (make placeholders)
+art/gen             draws the wizard, spell effects and campus tiles (make art)
+tools/mkplaceholders generates the remaining stand-in art (make placeholders)
 tools/mockup        renders the campus in several art styles (make mockup)
 docs/               ARCHITECTURE.md (how it fits together), ASEPRITE.md (art spec)
 ```

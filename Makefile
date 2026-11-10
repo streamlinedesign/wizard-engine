@@ -39,6 +39,13 @@ lint: ## gofmt and go vet
 placeholders: ## Regenerate the stand-in art under assets/
 	go run ./tools/mkplaceholders
 
+art: ## Redraw the wizard, spell effects and campus tiles into assets/ (needs python3 + Pillow)
+	python3 art/gen/wizard.py assets/sprites
+	python3 art/gen/effects.py assets/effects
+	python3 art/gen/tiles.py assets/tiles
+	rm -f assets/sprites/wizard_preview.png assets/effects/effects_preview.png assets/tiles/tiles_preview.png
+	python3 art/gen/preview.py assets docs/art
+
 mockup: ## Render the campus scene in each art style to mockup/
 	go run ./tools/mockup mockup/
 
@@ -77,4 +84,4 @@ configure-repo: ## One-time GitHub settings: auto-merge, Actions may open PRs, m
 clean: ## Remove build output
 	rm -rf $(NAME) $(NAME)-linux-amd64 sandbox wizard-engine mockup *.test *.out
 
-.PHONY: help dev test build lint placeholders mockup screenshot db-reset db-seed psql deploy release configure-repo clean
+.PHONY: help dev test build lint placeholders art mockup screenshot db-reset db-seed psql deploy release configure-repo clean

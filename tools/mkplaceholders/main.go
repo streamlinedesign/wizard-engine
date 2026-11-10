@@ -1,7 +1,8 @@
 // Command mkplaceholders writes the stand-in art under assets/ so the game
-// runs before any real sprites exist. It also writes the Aseprite-style JSON
-// for the wizard, so the import pipeline is exercised by real files from day
-// one. Real art from Aseprite replaces these files without code changes.
+// runs before any real sprites exist: the old wizard, the winter tiles and
+// the item icons. It also writes the Aseprite-style JSON for the old wizard,
+// so the import pipeline is exercised by real files from day one. Real art
+// replaces these files without code changes.
 //
 //	go run ./tools/mkplaceholders
 package main
@@ -170,10 +171,10 @@ func main() {
 	must(os.MkdirAll(filepath.Join(root, "sprites"), 0o755))
 	must(os.MkdirAll(filepath.Join(root, "tiles"), 0o755))
 	must(os.MkdirAll(filepath.Join(root, "icons"), 0o755))
-	must(writeWizard(filepath.Join(root, "sprites"), "wizard", palette))
+	// The player wizard (sprites/wizard.*), the campus tileset and the
+	// spell effects are real art now; this tool no longer writes them.
 	must(writeWizard(filepath.Join(root, "sprites"), "oldwizard", oldWizardPalette()))
 	must(writeWinterTiles(filepath.Join(root, "tiles", "winter.png")))
-	must(writeCampusTiles(filepath.Join(root, "tiles", "campus.png")))
 	must(writeItemIcons(filepath.Join(root, "icons", "items.png")))
 	fmt.Println("placeholders written under", root)
 }

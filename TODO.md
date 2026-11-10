@@ -15,7 +15,12 @@
 - Doors: let the campus facades open once a building has something inside
 - Replace the 12px stand-in bitmap font with the 5x7 pixel font once UI art
   exists
-- Real Aseprite art in place of `tools/mkplaceholders` output
+- More art, in the art pack's order: the old wizard and NPCs at 16x40,
+  portraits, the 47-tile autotile sets for grass, path, plaza and water (the
+  engine needs autotiling first), the rest of the campus props, item icons,
+  element recolours of the fireball
+- Play the art that exists but is not wired: `hurt`, `meditate`, barrier
+  `break`, footstep `puff`
 - Audio and gamepad bindings
 - Bring the "Wizard game to-do" project doc that `docs/DESIGN.md` points at
   into the repo, or link it
